@@ -1,13 +1,10 @@
-# Low Pass SPatial Domain Filtering 
-# to observe the blurring effect 
 import cv2 
 import numpy as np 
 	
 # Read the image 
 img = cv2.imread('noisy_img2.jpg', 0) 
 
-# Obtain number of rows and columns 
-# of the image 
+# Obtain number of rows and columns of the image 
 m, n = img.shape 
 
 # Develop Averaging filter(3, 3) mask 

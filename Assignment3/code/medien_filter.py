@@ -1,20 +1,12 @@
-# Median Spatial Domain Filtering 
-
-
 import cv2 
 import numpy as np 
-
 
 # Read the image 
 img_noisy1 = cv2.imread('noisy_img2.jpg', 0) 
 
-# Obtain the number of rows and columns 
-# of the image 
+# Obtain the number of rows and columns of the image 
 m, n = img_noisy1.shape 
 
-# Traverse the image. For every 3X3 area, 
-# find the median of the pixels and 
-# replace the center pixel by the median 
 img_new1 = np.zeros([m, n]) 
 
 for i in range(1, m-1): 
