@@ -10,8 +10,9 @@ def segment_logo(image_path):
     # Convert the image to grayscale
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-    # Apply edge detection or any other feature detection method
-    edges = cv2.Canny(gray, 100, 200)
+    # Apply adaptive thresholding
+    # Adjust parameters as needed
+    _, edges = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
     # Assuming the logo is the most prominent feature, find contours
     contours, _ = cv2.findContours(
@@ -23,14 +24,14 @@ def segment_logo(image_path):
 
     # Create a mask for the logo
     mask = np.zeros_like(gray)
-    cv2.drawContours(mask, [logo_contour], -1, 255, thickness=cv2.FILLED)
+    cv2.fillPoly(mask, [logo_contour], 255)
 
     # Segment the logo
     # 255 for white background
     segmented_logo = np.where(mask[..., None] == 255, img, 255)
 
     # Plotting
-    plt.figure(figsize=(10, 8))
+    plt.figure(figsize=(12, 8))
 
     plt.subplot(231), plt.imshow(img[:, :, ::-1])
     plt.title('Original Image'), plt.xticks([]), plt.yticks([])
@@ -39,7 +40,7 @@ def segment_logo(image_path):
     plt.title('Grayscale Image'), plt.xticks([]), plt.yticks([])
 
     plt.subplot(233), plt.imshow(edges, cmap='gray')
-    plt.title('Edge Image'), plt.xticks([]), plt.yticks([])
+    plt.title('Adaptive Thresholding'), plt.xticks([]), plt.yticks([])
 
     plt.subplot(234), plt.imshow(cv2.drawContours(
         np.zeros_like(img), contours, -1, (0, 255, 0), 2))
@@ -52,14 +53,15 @@ def segment_logo(image_path):
     plt.title('Segmented Logo'), plt.xticks([]), plt.yticks([])
 
     # Save the plotted image
-    output_path = 'Canny_' + image_path.split('.')[0] + 'Plots.jpg'
+    output_path = 'Threshold_' + image_path.split('.')[0] + 'Plots.jpg'
     plt.savefig(output_path, bbox_inches='tight')
 
     # Show the plotted image
     # plt.show()
 
     # Save the segmented logo
-    output_path_logo = 'Canny_' + image_path.split('.')[0] + 'Segmented.jpg'
+    output_path_logo = 'Threshold_' + \
+        image_path.split('.')[0] + 'Segmented.jpg'
     # cv2.imwrite(output_path_logo, segmented_logo)
 
 
