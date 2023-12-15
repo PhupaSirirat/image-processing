@@ -1,18 +1,21 @@
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
+import os
 
 
 def segment_logo(image_path):
     # Load the image
-    img = cv2.imread('./images/' + image_path)
+    img = cv2.imread(os.path.join('images', image_path))
 
-    # Convert the image to grayscale
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # Apply bilateral filtering for smoothing while preserving edges
+    smoothed_img = cv2.bilateralFilter(img, d=9, sigmaColor=75, sigmaSpace=75)
 
-    # Apply adaptive thresholding
-    # Adjust parameters as needed
-    _, edges = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    # Convert the smoothed image to grayscale
+    gray = cv2.cvtColor(smoothed_img, cv2.COLOR_BGR2GRAY)
+
+    # Apply edge detection or any other feature detection method
+    edges = cv2.Canny(gray, 100, 200)
 
     # Assuming the logo is the most prominent feature, find contours
     contours, _ = cv2.findContours(
@@ -24,23 +27,23 @@ def segment_logo(image_path):
 
     # Create a mask for the logo
     mask = np.zeros_like(gray)
-    cv2.fillPoly(mask, [logo_contour], 255)
+    cv2.drawContours(mask, [logo_contour], -1, 255, thickness=cv2.FILLED)
 
     # Segment the logo
     # 255 for white background
     segmented_logo = np.where(mask[..., None] == 255, img, 255)
 
     # Plotting
-    plt.figure(figsize=(12, 8))
+    plt.figure(figsize=(10, 8))
 
     plt.subplot(231), plt.imshow(img[:, :, ::-1])
     plt.title('Original Image'), plt.xticks([]), plt.yticks([])
 
-    plt.subplot(232), plt.imshow(gray, cmap='gray')
-    plt.title('Grayscale Image'), plt.xticks([]), plt.yticks([])
+    plt.subplot(232), plt.imshow(smoothed_img[:, :, ::-1])
+    plt.title('Smoothed Image'), plt.xticks([]), plt.yticks([])
 
     plt.subplot(233), plt.imshow(edges, cmap='gray')
-    plt.title('Adaptive Thresholding'), plt.xticks([]), plt.yticks([])
+    plt.title('Edge Image'), plt.xticks([]), plt.yticks([])
 
     plt.subplot(234), plt.imshow(cv2.drawContours(
         np.zeros_like(img), contours, -1, (0, 255, 0), 2))
@@ -53,22 +56,21 @@ def segment_logo(image_path):
     plt.title('Segmented Logo'), plt.xticks([]), plt.yticks([])
 
     # Save the plotted image
-    output_path = 'Threshold_' + image_path.split('.')[0] + 'Plots.jpg'
+    output_path = f'Canny_Bilateral_{os.path.splitext(image_path)[0]}_Plots.jpg'
     plt.savefig(output_path, bbox_inches='tight')
+
+    # Save the segmented logo
+    output_path_logo = f'Canny_Bilateral_{os.path.splitext(image_path)[0]}_Segmented.jpg'
+    # cv2.imwrite(output_path_logo, segmented_logo)
 
     # Show the plotted image
     # plt.show()
 
-    # Save the segmented logo
-    output_path_logo = 'Threshold_' + \
-        image_path.split('.')[0] + 'Segmented.jpg'
-    # cv2.imwrite(output_path_logo, segmented_logo)
-
 
 # List of images
-imagePath = ['handbag1.jpg', 'handbag2.jpeg', 'handbag3.jpg',
-             'handbag4.jpg', 'handbag7.jpg', 'handbag8.jpeg']
+image_paths = ['handbag1.jpg', 'handbag2.jpeg', 'handbag3.jpg',
+               'handbag4.jpg', 'handbag7.jpg', 'handbag8.jpeg']
 
 # Process each image in the list
-for path in imagePath:
+for path in image_paths:
     segment_logo(path)
